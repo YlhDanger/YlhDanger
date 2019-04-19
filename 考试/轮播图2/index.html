@@ -1,0 +1,162 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<style>
+* {margin:0; padding:0; }
+li{list-style:none; }
+
+#div1 {width:850px; height:500px;overflow: hidden; margin:50px auto;  position:relative;}
+#div1 ul{position: absolute;left: 0;transition:0.5s;}
+#div1 ul li{ height:500px;float:left;}
+#div1 ol {position:absolute;right: 45%;bottom: 10px;z-index:6}
+#div1 ol li{width: 20px;height: 20px;background: #fff;margin-left: 5px;float: left;line-height: 20px;text-align: center;cursor: pointer;}
+#div1 ol li.ac{background: red;color: #fff;}
+#div1>a{text-decoration: none;position: absolute;top: 50%;margin-top: -10px;height: 40px;line-height: 32px;text-align: center;width: 40px;font-size: 40px;vertical-align: middle;color: #fff;background: rgba(0,0,0,0.5);z-index:6;}
+#goPrev{left: 0;}
+#goNext{right: 0;}
+img{width:850px; height:500px;}
+</style>
+</head>
+
+<body>
+<div id="div1">
+	<ul>
+    	<li class="ac"><a href="javascript:alert(0);"><img src="1.jpg" /></a></li>
+    	<li><a href="javascript:alert(1);"><img src="2.jpg" /></a></li>
+    	<li><a href="javascript:alert(2);"><img src="3.jpg" /></a></li>
+    	<li><a href="javascript:alert(3);"><img src="4.jpg" /></a></li>
+    	<li><a href="javascript:alert(4);"><img src="5.jpg" /></a></li>
+		<li><a href="javascript:alert(4);"><img src="1.jpg" /></a></li>
+    </ul>
+    <ol>
+    	<li class="ac">1</li>
+    	<li>2</li>
+    	<li>3</li>
+    	<li>4</li>
+    	<li>5</li>
+    </ol>
+    <a href="javascript:;" id="goPrev">&laquo;</a>
+    <a href="javascript:;" id="goNext">&raquo;</a>
+</div>
+<script>
+	class SlideShow{
+		constructor(selector) {
+			//获取所需要的对象
+		    this.container = document.querySelector(selector);
+		    this.btns = this.container.querySelector("ol").children;
+			this.ul = this.container.querySelector("ul");
+		    this.imgs = this.container.querySelector("ul").children;
+		    this.goPrev = this.container.querySelector("#goPrev");
+		    this.goNext = this.container.querySelector("#goNext");
+			this.lastIndex = 0;
+			this.index = 0 ;
+			this.timer = 0;
+			
+			this.init();
+			this.bindEvents();
+			this.autoPlay();
+		}
+		
+		init(){
+			//给ul设置宽
+			this.container.querySelector("ul").style.width = this.imgs[0].offsetWidth * (this.imgs.length+1) + "px";
+		}
+		bindEvents(){
+			//留住最外层的this
+			let _this = this;
+			//给下一次按钮绑上事件
+			this.goNext.onclick =()=>{
+				this.index++;
+				//调用下一次事件
+				this.goNextClick();
+				
+				
+			}
+			
+			this.goPrev.onclick = () =>{
+			     this.index--
+				 this.goPrevClick();
+				   this.changBtn();
+				
+			}
+			
+		   //给按钮绑事件 把获取的集合转为数组 遍历绑事件
+		  Array.from(this.btns).forEach(function(btn,i){
+			  btn.onclick = () =>{
+				  _this.index = i ;
+				  //ul当前left 等于 现在按钮的index乘以宽度
+				  _this.ul.style.left = _this.index * -_this.imgs[0].clientWidth +"px"
+				  _this.changBtn();
+			  }
+			  
+		  })
+			
+		}
+		
+	
+		
+		goNextClick () {
+			//给uL设置left属性
+			this.ul.style.left = this.imgs[0].clientWidth * -this.index + "px";
+			//当点击到最后一张时让他自动跳转到第一张
+			if(Math.abs(this.index) === Math.abs(this.imgs.length-1)) {
+				setTimeout(()=>{
+					this.ul.style.transition = "none"; 
+					this.ul.style.left = 0;
+					this.index = 0 ;
+				},500);
+				
+			}
+			 this.ul.style.transition = "0.5s";
+			 
+			}
+		goPrevClick () {
+			//当在第一张的时候点击事件 让他跑到倒数第二张
+			if(this.index === -1 || 0){
+				 this.ul.style.transition = "none";
+			     this.ul.style.left = (this.imgs.length-1)* -this.imgs[0].clientWidth +"px" ;
+				 this.index = this.imgs.length-2;
+				
+			 }
+			 
+			 this.ul.style.transition = "0.5s";
+			 this.ul.style.left = this.index * -this.imgs[0].clientWidth +"px"; 
+			 
+			}
+		changBtn(){
+			console.log(this);
+			//给当前btn加上ac
+			this.btns[this.index].classList.add("ac")
+			//给上一次的btn去掉ac
+			this.btns[this.lastIndex].classList.remove("ac")
+			//记录上一次的坐标
+			this.lastIndex = this.index 
+			
+		}
+		//自动播放
+		autoPlay() {
+			console.log(this);
+			let _this = this;
+			//加一个定时器 没隔两秒 自动点击一次goNext
+			this.timer = setInterval(function(){
+				_this.goNext.onclick();
+			    _this.changBtn();
+			},2000)
+			//鼠标移入的时候关闭定时器
+			this.container.onmouseenter = () =>{
+					clearInterval(_this.timer);
+				}
+			//鼠标移出的时候再次让定时器开启
+			this.container.onmouseleave = this.autoPlay.bind(this);
+			}
+		
+		}
+	
+	
+  new SlideShow("#div1");
+</script>
+</body>
+</html>
